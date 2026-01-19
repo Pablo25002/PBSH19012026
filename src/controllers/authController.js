@@ -1,4 +1,4 @@
-const User = require('../models/user');
+const User = require('../models/users');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -41,3 +41,21 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: 'Error en login' });
   }
 };
+exports.verifyToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+
+  if (!authHeader) {
+    return res.status(403).json({ message: 'Token requerido' });
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  try {
+    const decoded = jwt.verify(token, 'secretkey');
+    req.userId = decoded.id;
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: 'Token inválido' });
+  }
+};
+
